@@ -1,0 +1,123 @@
+"""Check the architectural ledger against members and literal imports."""
+
+import ast
+import tomllib
+
+from invoke import Context, task
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
+
+from tasks.common import ROOT, members
+
+
+def check_workspace() -> None:
+    ledger = tomllib.loads((ROOT / "docs/workspace-ledger.toml").read_text())
+    entries = ledger["members"]
+    owned = {entry["path"]: entry for entry in entries}
+    actual = {str(path.relative_to(ROOT)) for path in members()}
+    errors: list[str] = []
+    if actual != set(owned):
+        errors.append(f"Ledger membership differs: {actual ^ set(owned)}")
+    prefixes = sorted(entries, key=lambda item: len(item["module"]), reverse=True)
+    names = {entry["distribution"] for entry in entries}
+    graph: dict[str, set[str]] = {}
+    namespace = ledger["namespace"]
+    for entry in entries:
+        base = ROOT / entry["path"]
+        config = tomllib.loads((base / "pyproject.toml").read_text())
+        project = config["project"]
+        if project["name"] != entry["distribution"]:
+            errors.append(f"{base}: distribution differs from ledger")
+        declared = {
+            str(canonicalize_name(Requirement(dependency).name))
+            for dependency in project.get("dependencies", [])
+        }
+        internal = declared & names
+        graph[entry["distribution"]] = internal
+        allowed = set(entry.get("allows", []))
+        if internal - allowed:
+            errors.append(
+                f"{base}: forbidden declared dependencies {internal - allowed}"
+            )
+        if allowed - names:
+            errors.append(f"{base}: unknown allowed members {allowed - names}")
+        source = base / "src"
+        for file in source.rglob("*.py"):
+            relative = file.relative_to(source).with_suffix("")
+            parts = list(relative.parts)
+            if parts[-1] == "__init__":
+                parts.pop()
+            module = ".".join(parts)
+            prefix = entry["module"]
+            if module != prefix and not module.startswith(prefix + "."):
+                errors.append(f"{file}: outside owned module {prefix}")
+            for parent in file.relative_to(source).parents:
+                candidate = ".".join(parent.parts)
+                if (
+                    candidate
+                    and any(
+                        item["module"].startswith(candidate + ".") for item in entries
+                    )
+                    and (source / parent / "__init__.py").exists()
+                ):
+                    errors.append(
+                        f"{source / parent}: shared namespace has __init__.py"
+                    )
+            tree = ast.parse(file.read_text(), filename=str(file))
+            imports: list[str] = []
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imports.extend(alias.name for alias in node.names)
+                elif isinstance(node, ast.ImportFrom):
+                    target = node.module or ""
+                    if node.level:
+                        package = parts if file.stem == "__init__" else parts[:-1]
+                        parent_parts = package[: len(package) - node.level + 1]
+                        target = ".".join([*parent_parts, *filter(None, [target])])
+                    imports.append(target)
+                    imports.extend(f"{target}.{alias.name}" for alias in node.names)
+            for target in imports:
+                if target != namespace and not target.startswith(namespace + "."):
+                    continue
+                owner = next(
+                    (
+                        item
+                        for item in prefixes
+                        if target == item["module"]
+                        or target.startswith(item["module"] + ".")
+                    ),
+                    None,
+                )
+                if owner is None:
+                    continue  # Namespace-only imports have no single owner.
+                dependency = owner["distribution"]
+                if dependency != entry["distribution"] and dependency not in internal:
+                    errors.append(f"{file}: undeclared internal import {target}")
+    visited: set[str] = set()
+    active: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in active:
+            errors.append(f"Dependency cycle involving {name}")
+            return
+        if name in visited:
+            return
+        active.add(name)
+        for dependency in graph.get(name, set()):
+            visit(dependency)
+        active.remove(name)
+        visited.add(name)
+
+    for name in graph:
+        visit(name)
+    if errors:
+        raise ValueError(
+            "Workspace boundaries failed:\n" + "\n".join(sorted(set(errors)))
+        )
+    print("Workspace boundaries passed")
+
+
+@task(name="check")
+def check(c: Context) -> None:
+    """Validate member ownership and internal dependency boundaries."""
+    check_workspace()

@@ -1,0 +1,9 @@
+"""Small __NAMESPACE__ domain validation shared by workspace members."""
+
+
+def validate_name(value: str) -> str:
+    """Normalize a nonempty display name."""
+    result = value.strip()
+    if not result:
+        raise ValueError("Name must not be empty")
+    return result

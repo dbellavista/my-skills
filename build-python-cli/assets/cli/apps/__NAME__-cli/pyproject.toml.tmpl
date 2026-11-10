@@ -1,0 +1,22 @@
+[project]
+name = "__NAME__-cli"
+version = "0.1.0"
+requires-python = ">=__PYTHON__"
+dependencies = ["__NAME__-core", "__NAME__-services", "cyclopts>=4.25,<6", "loguru>=0.7,<1"]
+
+[project.scripts]
+__COMMAND__ = "__NAMESPACE__.cli.app:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "__NAMESPACE__.cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "-ra"]
+
+[tool.ty.src]
+include = ["src", "tests"]

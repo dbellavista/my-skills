@@ -1,0 +1,29 @@
+"""Keep each member's pytest configuration and collection separate."""
+
+from pathlib import Path
+
+from invoke import Context, task
+
+from tasks.common import ROOT, members, run_tool
+
+
+def run_member(member: Path, *, rtk: bool) -> None:
+    tests = member / "tests"
+    if tests.is_dir() and any(tests.rglob("test_*.py")):
+        run_tool("pytest", "-c", str(member / "pyproject.toml"), str(tests), rtk=rtk)
+
+
+@task
+def run(c: Context, project: str, rtk: bool = True) -> None:
+    """Run tests for one workspace member."""
+    member = (ROOT / project).resolve()
+    if member not in members():
+        raise ValueError(f"Not a workspace member: {project}")
+    run_member(member, rtk=rtk)
+
+
+@task(name="all")
+def all_members(c: Context, rtk: bool = True) -> None:
+    """Run all member suites, one pytest process per member."""
+    for member in members():
+        run_member(member, rtk=rtk)

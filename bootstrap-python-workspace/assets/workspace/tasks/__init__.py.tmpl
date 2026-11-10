@@ -1,0 +1,9 @@
+"""Repository automation; product behavior belongs in library or CLI members."""
+
+from invoke import Collection
+
+from tasks import quality, test, workspace
+
+ns = Collection.from_module(quality)
+ns.add_collection(Collection.from_module(test))
+ns.add_collection(Collection.from_module(workspace))

@@ -1,0 +1,16 @@
+from loguru import logger
+
+from __NAMESPACE__.services.greeting import greet
+
+
+def greet_command(name: str) -> dict[str, str]:
+    """Greet a person.
+
+    Parameters
+    ----------
+    name
+        Name of the person to greet.
+    """
+    result = greet(name)
+    logger.info("Greeting prepared", name=name)
+    return result

@@ -1,0 +1,85 @@
+"""Lazy CLI composition with one logging and result boundary."""
+
+import json
+from pathlib import Path
+from typing import Annotated, Literal
+
+from cyclopts import App, Parameter
+
+from __NAMESPACE__.cli.registry import COMMANDS, render_catalog, search
+
+
+def emit_result(result: object, *, json_output: bool) -> None:
+    if result is None:
+        return
+    if json_output:
+        print(json.dumps(result, ensure_ascii=False))
+    elif isinstance(result, dict) and "message" in result:
+        print(result["message"])
+    elif isinstance(result, str):
+        print(result, end="" if result.endswith("\n") else "\n")
+    elif isinstance(result, list):
+        for item in result:
+            print(item)
+    else:
+        print(result)
+
+
+def create_app() -> App:
+    app = App(name="__COMMAND__", help="__NAMESPACE__ command-line tools.")
+    groups: dict[tuple[str, ...], App] = {(): app}
+    for command in COMMANDS:
+        for depth in range(1, len(command.path)):
+            path = command.path[:depth]
+            if path not in groups:
+                group = App(name=path[-1], help=f"{path[-1].title()} commands.")
+                groups[path[:-1]].command(group)
+                groups[path] = group
+        groups[command.path[:-1]].command(
+            command.target, name=command.path[-1], help=command.help
+        )
+
+    @app.command
+    def find(*keywords: str) -> list[dict[str, str]]:
+        """Search command names, summaries, and tags."""
+        return search(keywords)
+
+    @app.command
+    def catalog(*, output: Path | None = None) -> str | None:
+        """Render the command catalog, optionally writing a Markdown file."""
+        text = render_catalog()
+        if output is None:
+            return text
+        output.write_text(text)
+        return None
+
+    @app.meta.default
+    def launch(
+        *tokens: Annotated[str, Parameter(show=False, allow_leading_hyphen=True)],
+        json: bool = False,
+        log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO",
+    ) -> None:
+        from __NAMESPACE__.core.logging import configure_logging
+
+        configure_logging(level=log_level, json_logs=json)
+        result = app(tokens, result_action="return_value")
+        emit_result(result, json_output=json)
+
+    return app
+
+
+def main() -> None:
+    try:
+        create_app().meta(result_action="return_value")
+    except (ValueError, OSError) as error:
+        from loguru import logger
+
+        logger.error(
+            "Command failed", error=str(error), error_type=type(error).__name__
+        )
+        raise SystemExit(1) from None
+    except Exception:
+        from loguru import logger
+
+        logger.exception("Unexpected command failure")
+        raise SystemExit(1) from None

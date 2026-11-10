@@ -1,0 +1,21 @@
+# CLI development
+
+Run `uv run __COMMAND__ --help`, `uv run __COMMAND__ find greeting`, or
+`uv run __COMMAND__ --json greet Ada`. Global options precede the command.
+
+Commands are plain typed functions in `__NAMESPACE__.cli.commands`, registered by
+import target in `__NAMESPACE__.cli.registry`. Metadata powers help, search, and docs
+without importing leaf modules. Keep business logic in libraries. Delegate async
+execution to Cyclopts. Log stable messages with keyword context using Loguru.
+
+Return JSON-native results; the CLI prints results on stdout and logs on stderr.
+Validate destructive scopes, provide a side-effect-free dry-run where feasible, and
+call `confirm_destructive` before mutation. Unattended execution requires `--yes`.
+
+After registry changes regenerate `docs/cli.md`:
+
+```bash
+uv run __COMMAND__ catalog --output docs/cli.md
+uv run inv check
+uv run inv test.run --project apps/__NAME__-cli
+```

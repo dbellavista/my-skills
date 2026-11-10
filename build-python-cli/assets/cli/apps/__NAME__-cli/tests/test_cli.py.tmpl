@@ -1,0 +1,99 @@
+import importlib
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from __NAMESPACE__.cli.confirm import confirm_destructive
+from __NAMESPACE__.cli.registry import COMMANDS, render_catalog
+
+
+def invoke(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "-m", "__NAMESPACE__.cli", *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_json_result_and_logs_are_separate():
+    result = invoke("--json", "greet", "Ada")
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"message": "Hello, Ada!"}
+    assert json.loads(result.stderr)["record"]["extra"]["name"] == "Ada"
+
+
+def test_validation_and_domain_failures():
+    assert invoke("unknown-command").returncode != 0
+    result = invoke("greet", " ")
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "Name must not be empty" in result.stderr
+
+
+def test_async_command():
+    result = invoke("--json", "system", "ping")
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"status": "ok"}
+
+
+@pytest.mark.parametrize(
+    "args", [["--help"], ["system", "--help"], ["find", "greeting"]]
+)
+def test_discovery_does_not_load_leaf_modules(args):
+    code = f"""
+import sys
+from __NAMESPACE__.cli.app import create_app
+try:
+    create_app().meta({args!r}, result_action='return_value')
+except SystemExit as error:
+    assert error.code in (0, None)
+assert not any(
+    name.startswith('__NAMESPACE__.cli.commands') or name.startswith('__NAMESPACE__.services')
+    for name in sys.modules
+)
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_registry_targets_names_and_summaries():
+    paths = [command.path for command in COMMANDS]
+    assert len(paths) == len(set(paths))
+    for command in COMMANDS:
+        assert all(
+            re.fullmatch(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", part)
+            for part in command.path
+        )
+        assert command.path[-1] not in command.path[:-1]
+        module, name = command.target.split(":")
+        function = getattr(importlib.import_module(module), name)
+        assert callable(function)
+        assert function.__doc__.strip().splitlines()[0] == command.help
+
+
+def test_catalog_is_current():
+    root = Path(__file__).resolve().parents[3]
+    assert (root / "docs/cli.md").read_text() == render_catalog()
+
+
+def test_unattended_confirmation_refuses_without_yes(monkeypatch):
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: False)
+    with pytest.raises(ValueError, match="--yes"):
+        confirm_destructive("Delete selected files")
+    confirm_destructive("Delete selected files", yes=True)
+
+
+def test_interactive_confirmation_respects_response(monkeypatch):
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    with pytest.raises(ValueError, match="cancelled"):
+        confirm_destructive("Delete selected files")
+    monkeypatch.setattr("builtins.input", lambda _: "yes")
+    confirm_destructive("Delete selected files")

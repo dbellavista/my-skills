@@ -1,0 +1,19 @@
+[project]
+name = "__NAME__-core"
+version = "0.1.0"
+requires-python = ">=__PYTHON__"
+dependencies = ["loguru>=0.7,<1"]
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "__NAMESPACE__.core"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "-ra"]
+
+[tool.ty.src]
+include = ["src", "tests"]

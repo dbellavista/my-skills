@@ -1,0 +1,48 @@
+"""Application-owned Loguru configuration; importing this module changes no sinks."""
+
+import json
+import sys
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
+
+from loguru import logger
+
+if TYPE_CHECKING:
+    from loguru import Record
+
+
+def console_format(record: "Record") -> str:
+    """Return a template; keep dynamic values outside the template syntax."""
+    fields = {
+        key: value
+        for key, value in record["extra"].items()
+        if key != "_rendered_context"
+    }
+    record["extra"]["_rendered_context"] = (
+        " | " + json.dumps(fields, default=str, ensure_ascii=False, sort_keys=True)
+        if fields
+        else ""
+    )
+    return (
+        "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+        "<level>{level: <8}</level> | {name}:{function}:{line} | "
+        "<level>{message}</level>{extra[_rendered_context]}\n{exception}"
+    )
+
+
+def configure_logging(*, level: str = "INFO", json_logs: bool = False) -> None:
+    """Configure stderr once at an application's entry point."""
+    logger.remove()
+    logger.add(
+        sys.stderr,
+        level=level,
+        format="{message}" if json_logs else console_format,
+        serialize=json_logs,
+        colorize=False if json_logs else None,
+        diagnose=False,
+    )
+
+
+def render_context(fields: Mapping[str, object]) -> str:
+    """Serialize fields for external adapters without configuring logging."""
+    return json.dumps(dict(fields), default=str, ensure_ascii=False, sort_keys=True)

@@ -1,0 +1,15 @@
+# Testing
+
+Tests live under the member they exercise; shared helpers must not be imported from
+another member's `tests` directory. Use ordinary unit tests without external services.
+
+```bash
+uv run inv test.run --project packages/__NAME__-core
+uv run inv test.all
+uv run inv test.all --no-rtk
+```
+
+Every suite gets its own pytest process and member configuration. Add integration
+prerequisites only when the product needs them. Test observable behavior and failure
+paths rather than implementation wording. Before a release, build all member wheels,
+install them in a clean environment, and import packages from outside this checkout.

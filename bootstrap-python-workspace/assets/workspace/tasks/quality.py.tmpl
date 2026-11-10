@@ -1,0 +1,25 @@
+"""Read-only validation and explicit formatting."""
+
+from invoke import Context, task
+
+from tasks.common import ROOT, members, run_tool
+
+
+@task
+def check(c: Context, rtk: bool = True) -> None:
+    """Check lint, formatting, types, and workspace boundaries without editing."""
+    run_tool("ruff", "check", ".", rtk=rtk)
+    run_tool("ruff", "format", "--check", ".", rtk=rtk)
+    run_tool("ty", "check", "--project", str(ROOT), rtk=rtk)
+    for member in members():
+        run_tool("ty", "check", "--project", str(member), rtk=rtk)
+    from tasks.workspace import check_workspace
+
+    check_workspace()
+
+
+@task(name="format")
+def format_code(c: Context, rtk: bool = True) -> None:
+    """Sort imports and format Python files; leave other lint fixes for review."""
+    run_tool("ruff", "check", "--select", "I", "--fix", ".", rtk=rtk)
+    run_tool("ruff", "format", ".", rtk=rtk)

@@ -1,0 +1,41 @@
+# Development
+
+Run commands from the workspace root:
+
+```bash
+uv sync --all-packages
+uv run inv -l
+uv run inv check
+uv run inv format
+uv run inv test.all
+uv build --all-packages
+```
+
+`check` is read-only. `format` applies formatting and import sorting only.
+RTK is an external development executable; use `--no-rtk` for direct tool output.
+Tests and ty run separately for each member. Root tasks are type-checked too.
+Root development dependencies hold tooling; runtime dependencies belong to members.
+
+At substantive task closeout, review [open follow-ups](next-steps.md), add findings with
+evidence and completion criteria, remove completed items, update affected docs, and add
+user-visible changes to [the changelog](../../CHANGELOG.md). Keep speculative ideas out
+unless a concrete benefit and next action are known.
+
+## Commits
+
+Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
+`type(scope): concise summary`. The scope is optional; choose an affected member or
+capability when useful. Use `feat` for features and `fix` for bugs. Other useful types are
+`docs`, `refactor`, `perf`, `test`, `build`, `ci`, `style`, and `chore`.
+
+```text
+feat(cli): add command search
+fix(config): reject unknown keys
+docs(workspace): explain member ownership
+```
+
+Use a short imperative summary and keep commits cohesive. Mark breaking changes with `!`
+before the colon or a `BREAKING CHANGE:` footer, and explain the migration. Add a body for
+useful rationale, separated by a blank line. Review the staged diff so the message reflects
+the actual changes; mention only checks that ran. Apply the same convention to the final
+squash commit in squash workflows.

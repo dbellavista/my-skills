@@ -1,0 +1,8 @@
+"""Example application logic with no CLI dependency."""
+
+from __NAMESPACE__.core.names import validate_name
+
+
+def greet(name: str) -> dict[str, str]:
+    """Return a greeting after domain validation."""
+    return {"message": f"Hello, {validate_name(name)}!"}

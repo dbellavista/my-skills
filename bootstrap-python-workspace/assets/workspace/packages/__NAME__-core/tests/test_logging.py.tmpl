@@ -1,0 +1,38 @@
+import io
+import json
+
+import pytest
+from loguru import logger
+
+from __NAMESPACE__.core.logging import configure_logging, console_format
+
+
+@pytest.fixture(autouse=True)
+def reset_logging():
+    logger.remove()
+    yield
+    logger.remove()
+
+
+def test_context_braces_and_exceptions_survive_formatter():
+    output = io.StringIO()
+    logger.add(output, format=console_format, colorize=False, diagnose=False)
+    logger.info("Input accepted", path="{literal}", count=2)
+    try:
+        raise ValueError("bad input")
+    except ValueError:
+        logger.exception("Operation failed", operation="parse")
+    text = output.getvalue()
+    assert '"path": "{literal}"' in text
+    assert '"count": 2' in text
+    assert "ValueError: bad input" in text
+
+
+def test_json_keeps_fields_and_stdout_clean(capsys):
+    configure_logging(json_logs=True)
+    logger.info("Import completed", records=3)
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    entry = json.loads(captured.err)
+    assert entry["record"]["extra"] == {"records": 3}
+    assert entry["record"]["message"] == "Import completed"

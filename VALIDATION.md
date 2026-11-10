@@ -1,0 +1,29 @@
+# Validation
+
+Validated on 2026-11-10 with Python 3.12, uv 0.13.7, RTK 1.1.0, Ruff 0.17.4,
+ty 0.0.99, pytest 9.2.0, Invoke 2.2.1, Cyclopts 5.4.0, and Loguru 0.7.3.
+
+- All four `SKILL.md` files passed the skill-creator structural validator.
+- Nine standard-library bundle tests passed: rendering, independent names, namespace
+  packaging, invalid inputs, collision refusal, dry-run installation, full skill copies,
+  shared project destinations, and global destination mapping.
+- A fresh project used different distribution and import names in a path containing spaces.
+  Its checks passed without post-generation formatting: Ruff lint and formatting, ty for
+  root tasks and each of three members, and workspace boundary validation.
+- Sixteen generated tests passed in separate member processes: ten CLI tests, four core
+  tests, and two services tests. Coverage includes async execution, JSON result/log stream
+  separation, lazy help/search, target registration, catalog freshness, input failures,
+  confirmation behavior, and formatter handling of braces and exceptions.
+- Deliberately invalid namespace initialization, an undeclared internal import, and a
+  dependency cycle were each rejected. Invalid task selection returned a nonzero status.
+- All three members built both source distributions and wheels. Wheel contents retained
+  namespace boundaries, included typing markers, and contained only each member's package.
+- All three wheels installed together in a separate environment. Imports and sync/async CLI
+  execution worked from outside the source checkout.
+- Bundle Python scripts and tests passed Ruff and ty. Local Markdown links and neutral
+  content were audited.
+
+Installation paths and invocation instructions were checked against the linked official
+documentation. Actual global installation and interactive discovery in the three agents
+were not performed. No skills were registered. The evolution and dreaming skills received
+editorial and structural review; no autonomous agent behavioral evaluation is claimed.

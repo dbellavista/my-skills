@@ -1,0 +1,13 @@
+namespace = "__NAMESPACE__"
+
+[[members]]
+path = "packages/__NAME__-core"
+distribution = "__NAME__-core"
+module = "__NAMESPACE__.core"
+allows = []
+
+[[members]]
+path = "packages/__NAME__-services"
+distribution = "__NAME__-services"
+module = "__NAMESPACE__.services"
+allows = ["__NAME__-core"]

@@ -1,0 +1,19 @@
+[project]
+name = "__NAME__-services"
+version = "0.1.0"
+requires-python = ">=__PYTHON__"
+dependencies = ["__NAME__-core"]
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "__NAMESPACE__.services"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "-ra"]
+
+[tool.ty.src]
+include = ["src", "tests"]

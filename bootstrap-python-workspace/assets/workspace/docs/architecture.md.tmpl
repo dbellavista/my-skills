@@ -1,0 +1,14 @@
+# Architecture
+
+The virtual root shares a lockfile and environment across `packages/*` and `apps/*`.
+Libraries own regular packages below the PEP 420 namespace `__NAMESPACE__`.
+The dependency direction is services → core; applications can depend on either.
+
+See [the ownership ledger](workspace-ledger.toml). Update it when adding a member or
+changing allowed internal dependencies; run `uv run inv workspace.check` afterward.
+Put dependencies in the importing member, and declare internal workspace sources.
+Public import paths are part of the compatibility contract.
+
+Core provides validation and Loguru configuration. Services contains application logic.
+Applications own logging initialization; imports never reconfigure global sinks.
+Console logging uses the custom formatter; JSON logging preserves structured kwargs.

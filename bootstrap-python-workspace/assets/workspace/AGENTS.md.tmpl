@@ -1,0 +1,26 @@
+# Project conventions
+
+- Use uv from the repository root. Sync every member with `uv sync --all-packages`.
+- Preserve PEP 420 namespace boundaries: no `__init__.py` in shared `__NAMESPACE__/`.
+- Add dependencies to the importing member. Keep the member graph acyclic and update
+  `docs/workspace-ledger.toml` when ownership or dependency boundaries change.
+- Use typed Python and Loguru. Log stable messages with keyword context, such as
+  `logger.info("Operation completed", records=count)`. Applications configure the
+  shared custom formatter; library imports never reconfigure sinks.
+- `uv run inv check` validates Ruff, ty, and workspace boundaries without editing.
+  `uv run inv format` sorts imports and formats code. RTK is the default wrapper;
+  pass `--no-rtk` for raw output or environments without RTK.
+- Keep tests in their member and run `uv run inv test.all` as separate member suites.
+  Run focused suites during development and relevant checks before completion.
+- Keep product workflows in application/library code and repository automation in `tasks/`.
+- After substantive work, update affected docs and record evidence-backed future
+  improvements in `docs/development/next-steps.md`. Deduplicate; include the problem,
+  evidence, next action, and completion criteria. Do not invent follow-ups.
+- Remove completed backlog entries; record meaningful delivered changes in `CHANGELOG.md`.
+- When committing, use Conventional Commits: `type(scope): concise summary`, with an
+  optional scope. Use `feat` for features, `fix` for bugs, and an appropriate type for
+  other work. Mark breaking changes with `!` or a `BREAKING CHANGE:` footer and explain
+  the migration. See `docs/development/README.md` for examples.
+- When available, use `evolve-python-workspace` for architecture changes and closeout.
+  Use `dream-project-knowledge` when asked to consolidate accumulated project knowledge.
+  These conventions still apply when those skills are not installed.

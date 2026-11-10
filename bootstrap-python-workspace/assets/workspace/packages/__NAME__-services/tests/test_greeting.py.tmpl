@@ -1,0 +1,12 @@
+import pytest
+
+from __NAMESPACE__.services.greeting import greet
+
+
+def test_greeting_uses_normalized_name():
+    assert greet("  Ada ") == {"message": "Hello, Ada!"}
+
+
+def test_invalid_name_propagates():
+    with pytest.raises(ValueError, match="empty"):
+        greet(" ")

@@ -1,0 +1,12 @@
+import pytest
+
+from __NAMESPACE__.core.names import validate_name
+
+
+def test_normalizes_whitespace():
+    assert validate_name("  Ada  ") == "Ada"
+
+
+def test_rejects_empty_name():
+    with pytest.raises(ValueError, match="empty"):
+        validate_name("  ")

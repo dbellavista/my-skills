@@ -1,0 +1,38 @@
+"""Workspace discovery and argument-safe execution for repository tasks."""
+
+import shlex
+import shutil
+import subprocess
+import tomllib
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def members() -> list[Path]:
+    config = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    workspace = config["tool"]["uv"]["workspace"]
+    excluded = {
+        path.resolve()
+        for pattern in workspace.get("exclude", [])
+        for path in ROOT.glob(pattern)
+    }
+    return sorted(
+        {
+            path.resolve()
+            for pattern in workspace["members"]
+            for path in ROOT.glob(pattern)
+            if (path / "pyproject.toml").is_file() and path.resolve() not in excluded
+        }
+    )
+
+
+def run_tool(tool: str, *args: str, rtk: bool = True) -> None:
+    if rtk and shutil.which("rtk") is None:
+        raise RuntimeError("Install RTK or pass --no-rtk to this task")
+    command = ["uv", "run", "--no-sync"]
+    if rtk:
+        command.append("rtk")
+    command.extend([tool, *args])
+    print(shlex.join(command), flush=True)
+    subprocess.run(command, cwd=ROOT, check=True)

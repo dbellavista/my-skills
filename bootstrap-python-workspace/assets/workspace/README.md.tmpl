@@ -1,0 +1,16 @@
+# __NAME__
+
+Python workspace using the `__NAMESPACE__` namespace.
+
+```bash
+uv sync --all-packages
+uv run inv check
+uv run inv test.all
+```
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and
+[RTK](https://github.com/rtk-ai/rtk) first. Use `--no-rtk` on development tasks when
+RTK is unavailable or complete raw diagnostics are needed.
+
+Start with [development](docs/development/README.md), [architecture](docs/architecture.md),
+and [testing](docs/testing.md). Commit `uv.lock` after the first sync.
