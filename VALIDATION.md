@@ -1,5 +1,20 @@
 # Validation
 
+## Experiment workflow addition — 2026-11-12
+
+- Added `plan-and-run-experiments` with a mandatory terminology glossary, experiment
+  protocol template, model routing, bounded execution, and evidence-based review.
+- All nine standard-library bundle tests passed in a temporary copy of the bundle.
+- The new skill passed the skill-creator structural validator using the existing bundle
+  validation environment. Local Markdown reference links passed direct checks.
+- A selected-skill dry run changed nothing; an installation into a temporary project
+  copied the skill and reference byte-for-byte. A repeated installation refused the
+  collision and preserved all installed files. No global installation was performed.
+- One independent model exercise used undefined experiment aliases, unversioned artifacts,
+  correlated video-derived samples, and a two-GPU-hour cap. It kept unresolved terms
+  explicit, proposed protocol and routing requirements, and dispatched no jobs. This
+  limited behavioral check does not validate scientific outcomes or live execution.
+
 ## Planning skill addition — 2026-11-12
 
 - All nine standard-library bundle tests passed after adding `plan-model-work` to the

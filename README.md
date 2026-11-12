@@ -1,6 +1,6 @@
 # Reusable development skills
 
-Five portable agent skills for development planning and Python workspaces. This directory
+Six portable agent skills for development, experiments, and Python workspaces. This directory
 is a source bundle: keeping it here installs nothing and changes no agent settings.
 
 | Skill | Use |
@@ -10,6 +10,7 @@ is a source bundle: keeping it here installs nothing and changes no agent settin
 | [evolve-python-workspace](evolve-python-workspace/SKILL.md) | Maintain member boundaries, documentation, and actionable development follow-ups. |
 | [dream-project-knowledge](dream-project-knowledge/SKILL.md) | Consolidate available conversations, memories, docs, and custom skills into durable guidance. |
 | [plan-model-work](plan-model-work/SKILL.md) | Plan dependency-aware work packages, model assignments, commits, and reviewed milestones with explicit pause and branch choices. |
+| [plan-and-run-experiments](plan-and-run-experiments/SKILL.md) | Design and review reproducible experiments with model routing, a mandatory glossary, versioned protocols, and bounded execution. |
 
 ## Install into a project or globally
 
@@ -30,7 +31,7 @@ Verified against official documentation on 2026-11-10:
 These instructions cover local agent environments; remote/cloud sessions may need their
 own installation. Antigravity also documents legacy IDE paths; use the shared current path above.
 
-From this bundle directory, install all five for one project:
+From this bundle directory, install all six for one project:
 
 ```bash
 python3 scripts/install.py --agent codex --scope project --project /path/to/project --dry-run
@@ -64,7 +65,8 @@ session if an installed skill does not appear.
 ## Invoke a skill
 
 In Codex, use `$bootstrap-python-workspace`, `$build-python-cli`,
-`$evolve-python-workspace`, `$dream-project-knowledge`, or `$plan-model-work` in your prompt.
+`$evolve-python-workspace`, `$dream-project-knowledge`, `$plan-model-work`, or
+`$plan-and-run-experiments` in your prompt.
 In Claude Code and Antigravity App/CLI, use `/` followed by the skill name. In the
 Antigravity IDE, mention the skill by name and inspect the Customizations menu. You can also ask in
 natural language; descriptions support automatic selection. Confirm the intended skill
@@ -89,7 +91,17 @@ Use plan-model-work to plan a new feature. Assign each work package to an availa
 model, include dependencies and commit checkpoints, and use milestones where useful.
 Ask me when to pause and which branch to use. Require strongest-model reviews and
 assign any resulting fixes as new work packages.
+
+Use plan-and-run-experiments to design a baseline-versus-intervention comparison.
+Define every experiment code, dataset/model alias, abbreviation, and metric in a glossary.
+Assign available models to protocol design, evidence collection, execution, and review.
+Record leakage controls, uncertainty, resource limits, and stopping criteria before runs.
 ```
+
+`plan-model-work` governs software implementation packages and commits.
+`plan-and-run-experiments` governs empirical questions, protocols, runs, and interpretation;
+it does not introduce mandatory branch choices or a commit per experiment. Use both when
+an experiment requires substantial implementation, keeping each record in its existing home.
 
 ## Bootstrap before installing project skills
 

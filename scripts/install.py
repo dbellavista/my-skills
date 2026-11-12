@@ -10,6 +10,7 @@ SKILLS = (
     "evolve-python-workspace",
     "dream-project-knowledge",
     "plan-model-work",
+    "plan-and-run-experiments",
 )
 
 
