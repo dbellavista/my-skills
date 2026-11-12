@@ -9,6 +9,7 @@ SKILLS = (
     "build-python-cli",
     "evolve-python-workspace",
     "dream-project-knowledge",
+    "plan-model-work",
 )
 
 

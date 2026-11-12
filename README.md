@@ -1,7 +1,7 @@
-# Reusable Python project skills
+# Reusable development skills
 
-Four portable agent skills for Python workspace development. This directory is a source
-bundle: keeping it here installs nothing and changes no agent settings.
+Five portable agent skills for development planning and Python workspaces. This directory
+is a source bundle: keeping it here installs nothing and changes no agent settings.
 
 | Skill | Use |
 | --- | --- |
@@ -9,6 +9,7 @@ bundle: keeping it here installs nothing and changes no agent settings.
 | [build-python-cli](build-python-cli/SKILL.md) | Build a typed Cyclopts CLI with lazy imports, search, and structured output. |
 | [evolve-python-workspace](evolve-python-workspace/SKILL.md) | Maintain member boundaries, documentation, and actionable development follow-ups. |
 | [dream-project-knowledge](dream-project-knowledge/SKILL.md) | Consolidate available conversations, memories, docs, and custom skills into durable guidance. |
+| [plan-model-work](plan-model-work/SKILL.md) | Plan dependency-aware work packages, model assignments, commits, and reviewed milestones with explicit pause and branch choices. |
 
 ## Install into a project or globally
 
@@ -29,7 +30,7 @@ Verified against official documentation on 2026-11-10:
 These instructions cover local agent environments; remote/cloud sessions may need their
 own installation. Antigravity also documents legacy IDE paths; use the shared current path above.
 
-From this bundle directory, install all four for one project:
+From this bundle directory, install all five for one project:
 
 ```bash
 python3 scripts/install.py --agent codex --scope project --project /path/to/project --dry-run
@@ -63,7 +64,7 @@ session if an installed skill does not appear.
 ## Invoke a skill
 
 In Codex, use `$bootstrap-python-workspace`, `$build-python-cli`,
-`$evolve-python-workspace`, or `$dream-project-knowledge` in your prompt.
+`$evolve-python-workspace`, `$dream-project-knowledge`, or `$plan-model-work` in your prompt.
 In Claude Code and Antigravity App/CLI, use `/` followed by the skill name. In the
 Antigravity IDE, mention the skill by name and inspect the Customizations menu. You can also ask in
 natural language; descriptions support automatic selection. Confirm the intended skill
@@ -83,6 +84,11 @@ and record any actionable improvements discovered during the work.
 Use dream-project-knowledge to review the available session context, project memories,
 docs, and custom skills. Correct stale guidance, consolidate duplicates, preserve
 decisions, and report unavailable sources and unresolved questions.
+
+Use plan-model-work to plan a new feature. Assign each work package to an available
+model, include dependencies and commit checkpoints, and use milestones where useful.
+Ask me when to pause and which branch to use. Require strongest-model reviews and
+assign any resulting fixes as new work packages.
 ```
 
 ## Bootstrap before installing project skills
@@ -135,11 +141,23 @@ implicitly. No license choice is imposed on generated projects.
 
 ## Validate changes to this bundle
 
-Using Python >=3.12, run:
+Create the local validation environment with uv (Python >=3.12):
 
 ```bash
-python3 -m unittest discover -s tests -v
+uv sync --locked
+uv run --locked python -m unittest discover -s tests -v
 ```
+
+The development dependency group includes PyYAML for the skill-creator validator.
+When that skill is installed, run its validator using this environment, for example:
+
+```bash
+uv run --locked python /path/to/skill-creator/scripts/quick_validate.py plan-model-work
+```
+
+Use the actual path of your installed skill-creator. The validator is supplied by that
+skill; it is not bundled here. Commit `uv.lock` to keep the validation environment
+reproducible. The installer and bundle tests still use only the Python standard library.
 
 The nine tests exercise rendering, independent names, namespace layout, collision refusal,
 and installation behavior without changing actual global agent directories. For changes to
