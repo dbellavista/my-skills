@@ -1,6 +1,6 @@
 ---
 name: plan-model-work
-description: "Plan features, refactors, and other development work as dependency-aware work packages with explicit model assignments, commit checkpoints, and strongest-model reviews. Use when creating or revising an implementation plan and its execution workflow; scale milestones to the size and risk of the task."
+description: "Plan development work as dependency-aware work packages with model assignments, durable recovery checkpoints, bounded coordination, and strongest-model reviews. Use when creating or revising an implementation plan and its execution workflow, including subscription quota constraints; scale structure to the task."
 ---
 
 # Plan work across models
@@ -9,6 +9,11 @@ Produce an executable plan that balances quality, model cost, and coordination o
 Planning alone does not start implementation, launch agents, or authorize Git mutations.
 When execution is requested, carry the plan's dependencies, review gates, commits, and
 user-selected pause policy through execution.
+
+Treat sessions as replaceable: repository artifacts and a compact execution record must
+carry progress across quota exhaustion or session loss. Model assignments do not require
+a different model or a separate agent for every WP; reuse a suitable executor when that
+reduces startup and context costs.
 
 ## Establish the execution contract
 
@@ -35,6 +40,12 @@ capabilities, project configuration, or the user's model roster. If unavailable,
 the roster and use explicitly provisional assignments until it is known. Distinguish
 planned assignments from models that can actually be launched in this environment.
 
+Record the funding mode (subscription, API, or unknown), shared quota pools, telemetry
+availability, concurrency, and coordinator budget. Infer these from available evidence;
+ask only when a missing choice materially affects execution or cost. Never silently
+enable paid overages or change billing mode. For subscription execution, quota uncertainty,
+or costly coordination, read [quota and recovery guidance](references/quota-and-recovery.md).
+
 ## Choose the useful amount of structure
 
 Every plan has at least one work package (WP). Split when work has separate acceptance
@@ -54,6 +65,7 @@ For every WP, specify:
 - One exact executor model and a short reason for the assignment.
 - Relevant verification and a cohesive commit boundary or proposed commit subject.
 - Milestone membership when milestones are useful.
+- Durable checkpoint location and a bounded next step when interruption recovery matters.
 
 Dependencies must form an acyclic graph. Identify the critical path and parallel-ready
 packages only when useful. Consumers depend on a reviewed milestone when their work
@@ -81,6 +93,47 @@ greater complexity or an unsuccessful attempt shows the assignment is inadequate
 update the plan and explain the reason. Do not repeatedly spend cheap attempts on a
 problem needing stronger reasoning. Request a decision if the needed model is unavailable
 or a change exceeds the user's cost constraints.
+
+Include quota headroom and restart cost in routing decisions. Multiple agents or models
+may consume the same subscription pool; parallelism improves latency, not the allowance.
+Default to one active executor per shared pool when headroom is unknown. Increase only
+with evidence and within the execution contract. Preserve the assigned review gate when
+quota is low; defer it instead of silently weakening it.
+
+## Bound coordination and preserve progress
+
+Keep the coordinator focused on ready-package selection, dispatch, result validation,
+integration, and review gates. Give workers only their WP contract, relevant paths, and
+accepted dependency artifacts. Request compact completion records with evidence links;
+avoid importing full transcripts or repeating worker investigation and verification.
+
+Use completion/blocker notifications or runtime waits when available. Do not spend model
+turns repeatedly polling unchanged agents. With no event mechanism, use bounded status
+checks and back off, or record a handoff for the next explicit activation; do not promise
+automatic resumption. Batch independent dispatch and bookkeeping decisions.
+
+Set a concrete per-activation coordinator budget and say how it is enforced. Prefer a
+runtime-enforced token/turn/cost cap when supported, leaving checkpoint headroom. Otherwise
+use a soft default of at most three scheduling decisions per activation (dispatch a ready
+batch, handle a result batch, or advance a gate), then persist state and wait or hand off.
+Do not count progress narration as useful scheduling. This bounds activity, not exact
+tokens; include input, output, reasoning, and repeated context in any measured token budget.
+Keep review/implementation budgets separate and state whether runtime accounting includes
+children. Exhausting a budget requires a recovery checkpoint, not a completion claim.
+
+Each worker writes a compact checkpoint after a meaningful verified substep and before
+expensive operations, handoffs, or context loss. Keep one owned record per active WP and
+one coordinator-owned execution index. Record partial edits and failed or unrun checks;
+an interrupted WP remains incomplete until its acceptance checks and commit succeed.
+Checkpoint writes within a WP do not require additional Git commits.
+
+On quota pressure, stop new dispatch into the affected pool and checkpoint in-flight work
+where possible. A hard cutoff may prevent a final write, so never rely on a shutdown
+summary alone. On resumption, reconcile saved state against Git and actual artifacts,
+check whether old workers still run, and continue the next incomplete step without
+replaying the conversation. Follow the reference for quota observations, drain thresholds,
+and recovery fields. Quota/budget handoffs supplement the chosen pause policy; they never
+waive a requested user pause or authorize extra spending.
 
 ## Gate delivery on review and fixes
 
@@ -144,4 +197,7 @@ Check that every WP has a model, dependencies, verification, and commit boundary
 milestone has a strongest-model review; and review findings can feed assigned fix WPs
 back through the gate. Record unanswered required choices as pending. During authorized
 execution, keep status, findings, checks, and commit hashes current so another session
-can resume without reconstructing the conversation.
+can resume without reconstructing the conversation. Include quota observations or explicit
+unknowns, coordinator budget/enforcement, and recovery pointers when applicable. A planning
+document specifies these controls; it does not itself install monitoring, enforce caps,
+or arrange scheduled restarts.

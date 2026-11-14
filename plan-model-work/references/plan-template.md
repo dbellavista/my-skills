@@ -19,6 +19,16 @@ choices explicitly pending rather than implying agreement.
 - Model roster: <exact identifiers, capabilities, availability, relevant cost constraints>
 - Review model: <strongest available review-capable model and identifier>
 - Execution support: <available routing tools or required manual handoffs>
+- Funding and quota pools: <subscription / API / unknown; account aliases, shared model groups>
+- Quota observations: <source, timestamp, usage/reset per exposed window, or unknown>
+- Admission policy: <concurrency per pool, reserve/drain threshold, unknown-headroom behavior>
+- Coordinator budget: <per-activation token/turn/cost cap or soft scheduling-decision bound;
+  enforcement mechanism, child accounting, checkpoint reserve, cumulative use if available>
+- Recovery support: <execution index path, WP record location, completion notifications/wait
+  support, supported reset wakeup or manual resume; no implied monitoring installation>
+
+Keep quota/budget fields brief for small plans; explicit unknowns are valid. Use the
+[quota and recovery guidance](quota-and-recovery.md) when these constraints matter.
 
 ## Work packages
 
@@ -51,5 +61,12 @@ review. Each fix WP also appears in the work-package table with all required fie
 | --- | --- | --- | --- | --- |
 
 Use statuses that distinguish pending, running, blocked, committed, and accepted.
+For interruption-prone execution, link each active WP's compact checkpoint: timestamp,
+owner/session, directory/branch/base, latest commit and partial artifacts, current substep,
+actual checks, remaining checks, decisions, live jobs, blocker, and exact next action.
+Update after meaningful substeps, not just completion; partial work remains incomplete.
+The coordinator owns the shared index, while workers own their individual records.
+Record quota/budget interruptions and relevant reset observations without implying a
+scheduled restart. Reconcile records with Git and live workers before resuming.
 At a requested pause, record the next ready action and wait for the user's resume.
 At completion, record final review coverage and any explicitly deferred findings.

@@ -1,5 +1,18 @@
 # Validation
 
+## Planning quota and recovery update — 2026-11-14
+
+- Added shared-pool quota admission, bounded coordinator activity, per-WP recovery
+  records, and restart reconciliation to `plan-model-work` and its plan template.
+- Checked provider guidance against official Codex app-server, Claude Code status-line
+  and CLI, and Antigravity quota documentation. Inspected local Codex CLI 0.169.0 help;
+  no total-run token-budget flag was exposed there. No live account quota was queried.
+- The updated skill passed the skill-creator structural validator; all nine bundle
+  tests passed using the existing validation environment. Local skill reference links
+  and `git diff --check` passed.
+- No monitors, runtime caps, scheduled restarts, or global skill installations were
+  configured. No live quota exhaustion or autonomous-agent recovery test is claimed.
+
 ## Experiment workflow addition — 2026-11-12
 
 - Added `plan-and-run-experiments` with a mandatory terminology glossary, experiment

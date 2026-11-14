@@ -9,7 +9,7 @@ is a source bundle: keeping it here installs nothing and changes no agent settin
 | [build-python-cli](build-python-cli/SKILL.md) | Build a typed Cyclopts CLI with lazy imports, search, and structured output. |
 | [evolve-python-workspace](evolve-python-workspace/SKILL.md) | Maintain member boundaries, documentation, and actionable development follow-ups. |
 | [dream-project-knowledge](dream-project-knowledge/SKILL.md) | Consolidate available conversations, memories, docs, and custom skills into durable guidance. |
-| [plan-model-work](plan-model-work/SKILL.md) | Plan dependency-aware work packages, model assignments, commits, and reviewed milestones with explicit pause and branch choices. |
+| [plan-model-work](plan-model-work/SKILL.md) | Plan dependency-aware work packages, model assignments, reviewed commits, quota-aware recovery, and bounded coordination with explicit pause and branch choices. |
 | [plan-and-run-experiments](plan-and-run-experiments/SKILL.md) | Design and review reproducible experiments with model routing, a mandatory glossary, versioned protocols, and bounded execution. |
 
 ## Install into a project or globally
@@ -91,6 +91,9 @@ Use plan-model-work to plan a new feature. Assign each work package to an availa
 model, include dependencies and commit checkpoints, and use milestones where useful.
 Ask me when to pause and which branch to use. Require strongest-model reviews and
 assign any resulting fixes as new work packages.
+Account for shared subscription quotas, keep durable checkpoints for interrupted WPs,
+and bound coordinator activity. Distinguish observed limits from unknown headroom and
+runtime-enforced budgets from soft instructions.
 
 Use plan-and-run-experiments to design a baseline-versus-intervention comparison.
 Define every experiment code, dataset/model alias, abbreviation, and metric in a glossary.
