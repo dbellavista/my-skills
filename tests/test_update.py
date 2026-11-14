@@ -32,7 +32,12 @@ class UpdateTests(unittest.TestCase):
             commit()
             run('--skill', 'example', '--dry-run')
             self.assertFalse((project / '.agents').exists())
-            run('--skill', 'example')
+            (project / '.agents/skills/example').mkdir(parents=True)
+            (project / '.agents/skills/example/SKILL.md').write_text('different')
+            with self.assertRaises(SystemExit):
+                run('--skill', 'example', '--adopt-identical')
+            (project / '.agents/skills/example/SKILL.md').write_text('first')
+            run('--skill', 'example', '--adopt-identical')
             dest = project / '.agents/skills/example/SKILL.md'
             (source / 'example/SKILL.md').write_text('second')
             commit()

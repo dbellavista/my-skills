@@ -129,8 +129,9 @@ revision is `HEAD`. The updater records file hashes and revisions in
 project diff. It refuses untracked destinations, missing or locally modified
 imports, and modified licenses; resolve those differences manually first. Keep
 project-specific instructions outside imported skill directories. Existing
-Grimorio-style manifests are supported; existing copies without a manifest need
-manual review before adoption. This command updates one local project at a time;
+Grimorio-style manifests are supported. For copies without a manifest, use
+`--adopt-identical` with `--skill` to adopt copies that exactly match the selected
+revision; differing copies require manual review. This command updates one local project at a time;
 it does not push changes or open pull requests.
 
 ## Bootstrap before installing project skills

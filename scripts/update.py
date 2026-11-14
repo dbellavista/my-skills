@@ -43,6 +43,7 @@ def main():
     parser.add_argument('--skill', action='append', help='Select skills to add or update; defaults to existing imports')
     parser.add_argument('--revision', default='HEAD', help='Committed source revision (default: HEAD)')
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--adopt-identical', action='store_true', help='Adopt existing copies only when identical to the selected revision')
     args = parser.parse_args()
     try:
         project = args.project.resolve(strict=True)
@@ -93,7 +94,9 @@ def main():
                 dest = target / name
                 if dest.exists() or dest.is_symlink():
                     if name not in existing:
-                        raise ValueError(f'Untracked destination already exists: {dest}')
+                        if not args.adopt_identical or files(dest) != snapshots[name]:
+                            raise ValueError(f'Untracked destination already exists or differs: {dest}')
+                        continue
                     recorded = {entry['path']: entry['sha256'] for entry in existing[name].get('files', [])}
                     if files(dest) != recorded:
                         raise ValueError(f'Imported skill has local changes: {dest}')
@@ -109,9 +112,12 @@ def main():
             target.mkdir(parents=True, exist_ok=True)
             for name in selected:
                 dest = target / name
-                if dest.exists():
-                    shutil.rmtree(dest)
-                shutil.copytree(root / name, dest)
+                if name not in existing and dest.exists():
+                    pass  # An identical existing snapshot was explicitly adopted.
+                else:
+                    if dest.exists():
+                        shutil.rmtree(dest)
+                    shutil.copytree(root / name, dest)
                 existing[name] = {'name': name, 'source_head': revision, 'imported_at': datetime.date.today().isoformat(), 'files': [{'path': p, 'sha256': h} for p, h in sorted(snapshots[name].items())]}
             shutil.copyfile(root / 'LICENSE', license_target)
             lines = ([f'source_path = {quote(data["source_path"])}'] if 'source_path' in data else []) + [f'source_head = {quote(revision)}', f'license_path = {quote(license_name)}', f'license_sha256 = {quote(digest(license_target))}', '']
