@@ -106,6 +106,33 @@ Record leakage controls, uncertainty, resource limits, and stopping criteria bef
 it does not introduce mandatory branch choices or a commit per experiment. Use both when
 an experiment requires substantial implementation, keeping each record in its existing home.
 
+## Update committed project snapshots
+
+Use the updater to keep complete skill copies in a project for collaborators. It
+reads a committed revision of this repository, so commit skill changes here first.
+Python 3.11 or newer and Git are required.
+
+```bash
+# First import: select one or more skills (repeat --skill as needed).
+python3 scripts/update.py --project /path/to/project --skill plan-model-work --dry-run
+python3 scripts/update.py --project /path/to/project --skill plan-model-work
+
+# Later: update all skills recorded in the manifest.
+python3 scripts/update.py --project /path/to/project --dry-run
+python3 scripts/update.py --project /path/to/project
+```
+
+Use `--agent claude` for `.claude/skills` and `--revision <commit-or-tag>`
+to select a source revision. The default destination is `.agents/skills` and
+revision is `HEAD`. The updater records file hashes and revisions in
+`imported-skills.toml` and copies the license. Review and commit the resulting
+project diff. It refuses untracked destinations, missing or locally modified
+imports, and modified licenses; resolve those differences manually first. Keep
+project-specific instructions outside imported skill directories. Existing
+Grimorio-style manifests are supported; existing copies without a manifest need
+manual review before adoption. This command updates one local project at a time;
+it does not push changes or open pull requests.
+
 ## Bootstrap before installing project skills
 
 The bootstrap renderer expects a new or empty target. If you first install skills into
